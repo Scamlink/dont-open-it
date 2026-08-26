@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Will You Go On A Date With Me? 💖</title>
+  <!-- SEO & Meta -->
+  <meta name="description" content="A special romantic date request website with date, time, and food options!">
+  
+  <!-- Google Fonts: Outfit, Fredoka, Dancing Script -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Fredoka:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Canvas for Flower & Heart Confetti Animation -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Ambient Floating Flower Petals Background -->
+  <div class="ambient-petals" id="ambient-petals"></div>
+
+  <!-- Background Image Overlay with Glass Effect -->
+  <div class="bg-wrapper">
+    <div class="bg-image"></div>
+    <div class="bg-overlay"></div>
+  </div>
+
+  <!-- Pro Tip / Info Circle Floating Widget -->
+  <div class="info-widget-container">
+    <button class="info-circle-btn" id="info-circle-btn" aria-label="Date Info Summary" title="View Selection Summary">
+      <div class="info-icon-wrapper">
+        <i class="fa-solid fa-heart-pulse"></i>
+      </div>
+      <span class="info-badge-dot hidden" id="info-badge-dot"></span>
+      <span class="info-btn-tooltip">Selection Info ✨</span>
+    </button>
+
+    <!-- Info Popover Modal -->
+    <div class="info-popover hidden" id="info-popover">
+      <div class="popover-header">
+        <div class="popover-title">
+          <i class="fa-solid fa-sparkles text-pink"></i>
+          <span>Date Selection Info</span>
+        </div>
+        <button class="popover-close" id="popover-close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="popover-body">
+        <div class="info-row">
+          <div class="info-label"><i class="fa-regular fa-heart"></i> Status</div>
+          <div class="info-value" id="info-status-val">Waiting for response...</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label"><i class="fa-regular fa-calendar-days"></i> Chosen Date</div>
+          <div class="info-value" id="info-date-val">Not selected yet</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label"><i class="fa-regular fa-clock"></i> Chosen Time</div>
+          <div class="info-value" id="info-time-val">Not selected yet</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label"><i class="fa-solid fa-utensils"></i> Chosen Food</div>
+          <div class="info-value" id="info-food-val">None selected yet</div>
+        </div>
+      </div>
+      <div class="popover-footer">
+        <span class="pro-tip-tag"><i class="fa-solid fa-lightbulb"></i> Pro Tip:</span>
+        <span id="pro-tip-text">Click "Yes" to start setting up our perfect date!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Responsive Container -->
+  <main class="app-container">
+    
+    <!-- STEP 1: The Proposal / Question -->
+    <section class="card step-card active" id="step-1">
+      <div class="card-hero">
+        <div class="hero-img-frame">
+          <!-- Updated avatar to ONLY a flower as requested -->
+          <img src="./assets/flower.jpg" alt="Cute Flower" class="hero-img floating-hero" />
+          <div class="hero-sparkle sparkle-1">🌸</div>
+          <div class="hero-sparkle sparkle-2">✨</div>
+          <div class="hero-sparkle sparkle-3">💖</div>
+        </div>
+      </div>
+
+      <div class="card-content text-center">
+        <h1 class="romantic-title">Will you go on a date with me? <span class="heart-pulse">💖</span></h1>
+        <p class="romantic-subtitle">I promise it'll be filled with sweet memories, laughter, and delicious food! ✨</p>
+
+        <!-- Dynamic Runaway Button Container -->
+        <div class="proposal-actions" id="proposal-actions">
+          <button class="btn btn-primary btn-lg rounded-pill pulse-glow" id="btn-yes">
+            <i class="fa-solid fa-heart me-2"></i> YES! 💕
+          </button>
+          
+          <button class="btn btn-secondary btn-lg rounded-pill runaway-btn" id="btn-no">
+            <span id="btn-no-text">No 🙈</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: Date & Time Selection -->
+    <section class="card step-card" id="step-2">
+      <div class="card-header-icon">
+        <div class="icon-circle">
+          <i class="fa-solid fa-calendar-heart"></i>
+        </div>
+      </div>
+      
+      <div class="card-content text-center">
+        <h2 class="card-title">When are you free? 📅⏰</h2>
+        <p class="card-subtitle">Pick the date and time that fits your schedule best!</p>
+
+        <form id="datetime-form" class="datetime-form" onsubmit="return false;">
+          <div class="input-group-custom">
+            <label for="date-input" class="form-label">
+              <i class="fa-regular fa-calendar text-pink"></i> Select Date:
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-calendar-day input-icon"></i>
+              <input type="date" id="date-input" class="custom-input" required />
+            </div>
+          </div>
+
+          <div class="input-group-custom">
+            <label for="time-input" class="form-label">
+              <i class="fa-regular fa-clock text-pink"></i> Select Time:
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-clock input-icon"></i>
+              <input type="time" id="time-input" class="custom-input" value="19:00" required />
+            </div>
+          </div>
+
+          <!-- Quick Time Selection Pills -->
+          <div class="quick-time-section">
+            <span class="quick-label">Or choose a quick time:</span>
+            <div class="time-pills">
+              <button type="button" class="time-pill" data-time="12:30">Lunch (12:30 PM) ☀️</button>
+              <button type="button" class="time-pill active" data-time="19:00">Dinner (7:00 PM) 🌅</button>
+              <button type="button" class="time-pill" data-time="20:30">Late Night (8:30 PM) 🌙</button>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-primary btn-block rounded-pill" id="btn-to-step-3">
+              Next: Pick Food 😋 <i class="fa-solid fa-arrow-right ms-2"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- STEP 3: Food Selection Grid -->
+    <section class="card step-card" id="step-3">
+      <div class="card-header-icon">
+        <div class="icon-circle">
+          <i class="fa-solid fa-utensils"></i>
+        </div>
+      </div>
+
+      <div class="card-content text-center">
+        <h2 class="card-title">What are we eating? 😋</h2>
+        <p class="card-subtitle">Choose your favorite food options (select one or more!)</p>
+
+        <!-- Food Tiles Grid -->
+        <div class="food-grid" id="food-grid">
+          
+          <!-- Pizza -->
+          <div class="food-card" data-food="Pizza" data-emoji="🍕">
+            <div class="food-check-badge"><i class="fa-solid fa-check"></i></div>
+            <div class="food-img-wrapper">
+              <img src="./assets/pizza.jpg" alt="Pizza" class="food-img" />
+            </div>
+            <div class="food-info">
+              <div class="food-name">Pizza 🍕</div>
+              <div class="food-desc">Cheesy pepperoni</div>
+            </div>
+          </div>
+
+          <!-- Burger -->
+          <div class="food-card" data-food="Burger" data-emoji="🍔">
+            <div class="food-check-badge"><i class="fa-solid fa-check"></i></div>
+            <div class="food-img-wrapper">
+              <img src="./assets/burger.jpg" alt="Burger" class="food-img" />
+            </div>
+            <div class="food-info">
+              <div class="food-name">Burger 🍔</div>
+              <div class="food-desc">Juicy burger & fries</div>
+            </div>
+          </div>
+
+          <!-- Sushi -->
+          <div class="food-card" data-food="Sushi" data-emoji="🍣">
+            <div class="food-check-badge"><i class="fa-solid fa-check"></i></div>
+            <div class="food-img-wrapper">
+              <img src="./assets/sushi.jpg" alt="Sushi" class="food-img" />
+            </div>
+            <div class="food-info">
+              <div class="food-name">Sushi 🍣</div>
+              <div class="food-desc">Fresh salmon rolls</div>
+            </div>
+          </div>
+
+          <!-- Pasta -->
+          <div class="food-card" data-food="Pasta" data-emoji="🍝">
+            <div class="food-check-badge"><i class="fa-solid fa-check"></i></div>
+            <div class="food-img-wrapper">
+              <img src="./assets/pasta.jpg" alt="Pasta" class="food-img" />
+            </div>
+            <div class="food-info">
+              <div class="food-name">Pasta 🍝</div>
+              <div class="food-desc">Creamy Alfredo</div>
+            </div>
+          </div>
+
+          <!-- Tacos -->
+          <div class="food-card" data-food="Tacos" data-emoji="🌮">
+            <div class="food-check-badge"><i class="fa-solid fa-check"></i></div>
+            <div class="food-img-wrapper">
+              <img src="./assets/tacos.jpg" alt="Tacos" class="food-img" />
+            </div>
+            <div class="food-info">
+              <div class="food-name">Tacos 🌮</div>
+              <div class="food-desc">Crispy tacos & guac</div>
+            </div>
+          </div>
+
+          <!-- Ramen -->
+          <div class="food-card" data-food="Ramen" data-emoji="🍜">
+            <div class="food-check-badge"><i class="fa-solid fa-check"></i></div>
+            <div class="food-img-wrapper">
+              <img src="./assets/ramen.jpg" alt="Ramen" class="food-img" />
+            </div>
+            <div class="food-info">
+              <div class="food-name">Ramen 🍜</div>
+              <div class="food-desc">Warm noodle bowl</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="form-actions mt-4">
+          <button type="button" class="btn btn-primary btn-block rounded-pill" id="btn-to-step-4">
+            Confirm & Celebrate Date! 🎉 💕
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4: Celebration / Confirmation Page -->
+    <section class="card step-card" id="step-4">
+      <div class="card-hero text-center">
+        <div class="glad-badge pulse-glow">
+          <i class="fa-solid fa-face-laugh-beam"></i>
+        </div>
+      </div>
+
+      <div class="card-content text-center">
+        <h1 class="romantic-title font-handwriting text-pink-gradient">
+          I am glad you didn't say no! 🥰
+        </h1>
+        <p class="romantic-subtitle">Our date is officially booked! Be ready on the date, time, and food you chose! ✨</p>
+
+        <!-- Final Summary Box -->
+        <div class="summary-box">
+          <div class="summary-header">
+            <i class="fa-solid fa-sparkles"></i> Official Date Itinerary <i class="fa-solid fa-sparkles"></i>
+          </div>
+
+          <div class="summary-items">
+            <div class="summary-item">
+              <div class="summary-icon"><i class="fa-regular fa-calendar-check"></i></div>
+              <div class="summary-details">
+                <span class="summary-title">Date</span>
+                <span class="summary-val" id="summary-date-display">-</span>
+              </div>
+            </div>
+
+            <div class="summary-item">
+              <div class="summary-icon"><i class="fa-regular fa-clock"></i></div>
+              <div class="summary-details">
+                <span class="summary-title">Time</span>
+                <span class="summary-val" id="summary-time-display">-</span>
+              </div>
+            </div>
+
+            <div class="summary-item">
+              <div class="summary-icon"><i class="fa-solid fa-utensils"></i></div>
+              <div class="summary-details">
+                <span class="summary-title">Food Menu</span>
+                <span class="summary-val" id="summary-food-display">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-quote">
+            <i class="fa-solid fa-quote-left me-1 opacity-50"></i>
+            Be ready on <strong id="quote-date-time">the time and date you chose</strong>! I can't wait for our date! ❤️
+            <i class="fa-solid fa-quote-right ms-1 opacity-50"></i>
+          </div>
+        </div>
+
+        <div class="final-actions">
+          <button class="btn btn-primary rounded-pill me-2" id="btn-celebrate-again">
+            <i class="fa-solid fa-gift me-2"></i> Celebrate Again! 🎉
+          </button>
+          <button class="btn btn-outline rounded-pill" id="btn-copy-summary">
+            <i class="fa-regular fa-copy me-2"></i> Copy Summary 📋
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div class="toast-notification hidden" id="toast-notification">
+    <i class="fa-solid fa-check-circle me-2"></i>
+    <span id="toast-message">Notification message</span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
