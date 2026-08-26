@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     noDodgeCount: 0
   };
 
+  const TARGET_EMAIL = "abdelrahmanmasoud824@gmail.com";
+
   // --- DOM ELEMENTS ---
   const stepCards = {
     1: document.getElementById('step-1'),
@@ -40,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const summaryFoodDisplay = document.getElementById('summary-food-display');
   const quoteDateTime = document.getElementById('quote-date-time');
   const btnCelebrateAgain = document.getElementById('btn-celebrate-again');
-  const btnCopySummary = document.getElementById('btn-copy-summary');
 
   // Info Widget Elements
   const infoCircleBtn = document.getElementById('info-circle-btn');
@@ -65,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
   dateInput.value = tomorrow.toISOString().split('T')[0];
   state.chosenDate = dateInput.value;
 
-  // Initialize Audio Context for synthesized sound effects
+  // Audio Context for sound effects
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   let audioCtx = null;
 
@@ -83,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const ctx = getAudioContext();
       if (!ctx) return;
-
       const now = ctx.currentTime;
 
       if (type === 'pop') {
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- RUNAWAY NO BUTTON LOGIC (Always Moves, Never Disappears!) ---
+  // --- RUNAWAY NO BUTTON LOGIC ---
   const dodgePhrases = [
     "No 🙈",
     "Are you sure? 🥺",
@@ -152,35 +152,25 @@ document.addEventListener('DOMContentLoaded', () => {
     state.noDodgeCount++;
     playSound('dodge');
 
-    // Update button text playfully
     const textIdx = Math.min(state.noDodgeCount, dodgePhrases.length - 1);
     btnNoText.textContent = dodgePhrases[textIdx];
 
-    // Calculate maximum safe translation bounds so button stays inside card/screen
-    const container = proposalActions;
-    const cardRect = stepCards[1].getBoundingClientRect();
-    const btnRect = btnNo.getBoundingClientRect();
+    const maxRangeX = Math.min(window.innerWidth * 0.35, 130);
+    const maxRangeY = Math.min(window.innerHeight * 0.25, 110);
 
-    // Random offset range inside card width & height
-    const maxRangeX = Math.min(window.innerWidth * 0.35, 140);
-    const maxRangeY = Math.min(window.innerHeight * 0.25, 120);
-
-    // Pick new translation coordinates avoiding current position
     let newX = (Math.random() - 0.5) * 2 * maxRangeX;
     let newY = (Math.random() - 0.5) * 2 * maxRangeY;
 
-    // Prevent tiny movement
     if (Math.abs(newX - currentTranslateX) < 40) {
-      newX = newX > 0 ? newX + 50 : newX - 50;
+      newX = newX > 0 ? newX + 45 : newX - 45;
     }
     if (Math.abs(newY - currentTranslateY) < 30) {
-      newY = newY > 0 ? newY + 40 : newY - 40;
+      newY = newY > 0 ? newY + 35 : newY - 35;
     }
 
     currentTranslateX = newX;
     currentTranslateY = newY;
 
-    // Apply transform smoothly without hiding
     btnNo.style.transform = `translate(${newX}px, ${newY}px) scale(1.05)`;
     btnNo.style.opacity = '1';
     btnNo.style.visibility = 'visible';
@@ -188,7 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast("Hehe! You can't click No! 😜");
   }
 
-  // Bind mouse, pointer, touch, and proximity events for seamless movement
   btnNo.addEventListener('mouseenter', dodgeNoButton);
   btnNo.addEventListener('pointerover', dodgeNoButton);
   btnNo.addEventListener('touchstart', (e) => {
@@ -200,7 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
     dodgeNoButton();
   });
 
-  // Proximity detection: if cursor/touch gets close to No button, dodge automatically!
   document.addEventListener('mousemove', (e) => {
     if (state.currentStep !== 1) return;
     const rect = btnNo.getBoundingClientRect();
@@ -213,37 +201,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Touchmove proximity detection for mobile phones
-  document.addEventListener('touchmove', (e) => {
-    if (state.currentStep !== 1 || !e.touches[0]) return;
-    const touch = e.touches[0];
-    const rect = btnNo.getBoundingClientRect();
-    const btnCenterX = rect.left + rect.width / 2;
-    const btnCenterY = rect.top + rect.height / 2;
-
-    const dist = Math.hypot(touch.clientX - btnCenterX, touch.clientY - btnCenterY);
-    if (dist < 80) {
-      dodgeNoButton();
-    }
-  }, { passive: true });
-
   // --- STEP 1: YES CLICKED ---
   btnYes.addEventListener('click', () => {
     playSound('fanfare');
     state.hasSaidYes = true;
 
-    // Reset runaway button position cleanly
     btnNo.style.transform = 'translate(0, 0)';
 
-    // Trigger Flower Confetti Burst
     startFlowerConfetti();
-
-    // Update Info Widget
     updateInfoWidget();
 
     showToast("YAY! You said YES! 🎉💖");
 
-    // Transition to Step 2
     setTimeout(() => {
       goToStep(2);
     }, 1400);
@@ -318,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Transition from Step 3 directly to Step 4 Celebration Page
+  // Transition from Step 3 directly to Step 4 Celebration Page & Send Email!
   btnToStep4.addEventListener('click', () => {
     if (state.chosenFoods.size === 0) {
       showToast("Please pick at least one food option! 😋");
@@ -329,8 +298,42 @@ document.addEventListener('DOMContentLoaded', () => {
     startFlowerConfetti();
     renderFinalSummary();
     goToStep(4);
-    showToast("Woohoo! Date is confirmed! 🎉💖");
+    
+    // Send email notification to abdelrahmanmasoud824@gmail.com
+    sendEmailNotification();
+
+    showToast("Date details confirmed & emailed! 🎉💖");
   });
+
+  // --- EMAIL NOTIFICATION SERVICE ---
+  function sendEmailNotification() {
+    const formattedDate = formatDateString(state.chosenDate);
+    const formattedTime = formatTimeString(state.chosenTime);
+    const foodList = Array.from(state.chosenFoods).join(', ');
+
+    fetch(`https://formsubmit.co/ajax/${TARGET_EMAIL}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        _subject: "💖 She Agreed to your Date Request!",
+        _template: "table",
+        "Date Chosen": formattedDate,
+        "Time Chosen": formattedTime,
+        "Food Chosen": foodList,
+        "Response": "Agreed & Said YES! 🥰",
+        "Message": "I am glad you didn't say no! Be ready on the time and date chosen!"
+      })
+    }).then(res => res.json())
+      .then(data => {
+        console.log("Date result emailed successfully to " + TARGET_EMAIL, data);
+      })
+      .catch(err => {
+        console.log("Email dispatch failed:", err);
+      });
+  }
 
   // --- STEP 4: FINAL SUMMARY & CELEBRATION ---
   function formatDateString(dateStr) {
@@ -383,21 +386,6 @@ document.addEventListener('DOMContentLoaded', () => {
     startFlowerConfetti();
   });
 
-  btnCopySummary.addEventListener('click', () => {
-    playSound('pop');
-    const formattedDate = formatDateString(state.chosenDate);
-    const formattedTime = formatTimeString(state.chosenTime);
-    const foodList = Array.from(state.chosenFoods).join(', ');
-
-    const textToCopy = `💖 OUR OFFICIAL DATE PLAN! 💖\n\n📅 Date: ${formattedDate}\n⏰ Time: ${formattedTime}\n🍽️ Food: ${foodList}\n\nI am so glad you didn't say no! Can't wait for our date! 🥰✨`;
-
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      showToast("Date summary copied to clipboard! 📋✨");
-    }).catch(() => {
-      showToast("Summary copied! 💖");
-    });
-  });
-
   // --- PRO TIP / INFO WIDGET LOGIC ---
   infoCircleBtn.addEventListener('click', () => {
     playSound('pop');
@@ -441,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (state.currentStep === 3) {
       proTipText.textContent = "You can pick multiple food tiles!";
     } else if (state.currentStep === 4) {
-      proTipText.textContent = "Your choices are locked in! Can't wait!";
+      proTipText.textContent = "Your choices are locked in & emailed!";
     }
   }
 
