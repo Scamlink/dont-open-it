@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     noDodgeCount: 0
   };
 
-  const TARGET_EMAIL = "abdelrahmanmasoud824@gmail.com";
+  const TARGET_EMAIL = "bebomassoud82@gmail.com";
 
   // --- DOM ELEMENTS ---
   const stepCards = {
